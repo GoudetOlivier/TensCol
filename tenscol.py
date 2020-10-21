@@ -14,7 +14,7 @@ Date: 08/08/2019
 """
 
 
-def job_function(instanceList, D, alpha, beta, lambda_, mu_, nu_, eta_, sigma_0, nb_iter, rho, max_iter=2000000, idx=0):
+def job_function(instanceList, D, alpha, beta, lambda_, mu_, nu_, eta_, sigma_0, nb_iter, max_iter=2000000, idx=0):
 
     index_dataset = int(idx/(nbrun))
     idx = int(idx%nbrun)
@@ -29,6 +29,8 @@ def job_function(instanceList, D, alpha, beta, lambda_, mu_, nu_, eta_, sigma_0,
         isECP = True
     else:
         isECP = False
+    
+    rho = float(tmp[3])
 
     print("nameGraph : " + str(nameGraph))
     print("k : " + str(k))
@@ -178,10 +180,10 @@ def job_function(instanceList, D, alpha, beta, lambda_, mu_, nu_, eta_, sigma_0,
 
 
 # nb of gpu available devices
-ngpus = 1
+ngpus = 4
 
 # nb of replications
-nbrun = 10
+nbrun = 4
 
 List_free_device = set()
 for i in range(ngpus):
@@ -192,7 +194,9 @@ njobs = ngpus
 
 verbose = True
 
-instanceList=["DSJC250_5-28-GCP","DSJC250_5-29-ECP","DSJC500_5-48-GCP","DSJC500_5-51-ECP","DSJC1000_5-84-GCP","DSJC1000_5-92-ECP"]
+#format instance to launch: nameGraph-nbColors-typePb-rho
+
+instanceList=["r250_5-65-GCP-10","r250_5-65-ECP-10","DSJC250_5-28-GCP-200","DSJC250_5-29-ECP-200","DSJC500_5-48-GCP-200","DSJC500_5-51-ECP-200","DSJC1000_5-84-GCP-200","DSJC1000_5-92-ECP-200"]
 
 
 #Parameters
@@ -205,11 +209,10 @@ nu_ = 0.00001
 eta_ = 0.001
 sigma_0 = 0.01
 nb_iter = 5
-rho = 200
 max_iter = 2000000
 
 # Launch all instances with nbrun replications in parallel on the available gpu devices with the given parameters
-results = Parallel(n_jobs=njobs, backend='threading')(delayed(job_function)( instanceList, D, alpha, beta, lambda_, mu_, nu_, eta_, sigma_0, nb_iter, rho, max_iter, idx=idx) for idx in range(nbrun*len(instanceList)))
+results = Parallel(n_jobs=njobs, backend='threading')(delayed(job_function)( instanceList, D, alpha, beta, lambda_, mu_, nu_, eta_, sigma_0, nb_iter, max_iter, idx=idx) for idx in range(nbrun*len(instanceList)))
 
 #Create result report
 freport = pd.DataFrame()
